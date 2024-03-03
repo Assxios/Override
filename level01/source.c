@@ -1,4 +1,4 @@
-// gcc -fno-stack-protector -m32 main.c
+// gcc -fno-stack-protector -m32 source.c
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

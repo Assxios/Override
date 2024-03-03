@@ -18,4 +18,4 @@ Need to input one of theses value for the `test` function to not take a random k
 ```
 Then we need to find the correct key between these values that will decrypt "Q}|u\`sfg~sf{}|a3" with a `XOR` to `Congratulations!`.
 
-In our case it is `18` therefore our number we need to inpyt is `322424827`
+In our case it is `18` therefore our number we need to input is `322424827`
