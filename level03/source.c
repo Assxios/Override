@@ -1,7 +1,8 @@
+// gcc -m32
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>
-#include <sys/syscall.h>
+#include <stdlib.h>
+#include <time.h>
 
 void clear_stdin()
 {
@@ -24,28 +25,28 @@ unsigned int get_unum()
     return var1;
 }
 
+// Slightly incorrect, but whatever
 void prog_timeout()
 {
-    _exit(1); // Slightly incorrect, but whatever
+    exit(1); // Supposed to be a system call but cannot reproduce
 }
 // any above functions are useless
 
+// Missing optimization in assembly
 void decrypt(unsigned int key)
 {
-    unsigned char data[] = {0x75, 0x7c, 0x7d, 0x51, 0x67, 0x66, 0x73, 0x60, 0x7b, 0x66, 0x73, 0x7e, 0x33, 0x61, 0x7c, 0x7d, 0x00}; // -0x1d(%ebp) - -0x11(%ebp)
-    // Q}|u`sfg~sf{}|a3
-    int data_length = strlen((char*)data); // -0xc(%ebp)
-    int i = 0; // -0xd(%ebp) 
+    unsigned char buf[] = "Q}|u`sfg~sf{}|a3"; // -0x1d(%ebp) - -0xd(%ebp)
+    // unsigned char buf[] = {0x75, 0x7c, 0x7d, 0x51, 0x67, 0x66, 0x73, 0x60, 0x7b, 0x66, 0x73, 0x7e, 0x33, 0x61, 0x7c, 0x7d, 0x00};
+    unsigned int len = strlen((char*)buf); // -0x24(%ebp)
+    unsigned int i = 0; // -0x28(%ebp)
 
-    for (i = 0; i < data_length; i++) {
-        data[i] ^= key; // XOR decryption
-    }
+    for (i; i < len; i++)
+        buf[i] ^= key; // XOR decryption
 
-    if (strncmp((char*)data, "Congratulations!", 0x11) == 0) {
+    if (strncmp((char*)buf, "Congratulations!", 0x11) == 0)
         system("/bin/sh");
-    } else {
+    else
         puts("\nInvalid Password");
-    }
 }
 
 void test(unsigned int usr_value, unsigned int pass)
@@ -55,33 +56,59 @@ void test(unsigned int usr_value, unsigned int pass)
     switch (var)
     {
         case 0x1:
+            decrypt(var);
+            break;
         case 0x2:
+            decrypt(var);
+            break;
         case 0x3:
+            decrypt(var);
+            break;
         case 0x4:
+            decrypt(var);
+            break;
         case 0x5:
+            decrypt(var);
+            break;
         case 0x6:
+            decrypt(var);
+            break;
         case 0x7:
+            decrypt(var);
+            break;
         case 0x8:
+            decrypt(var);
+            break;
         case 0x9:
+            decrypt(var);
+            break;
         case 0x10:
+            decrypt(var);
+            break;
         case 0x11:
+            decrypt(var);
+            break;
         case 0x12:
+            decrypt(var);
+            break;
         case 0x13:
+            decrypt(var);
+            break;
         case 0x14:
+            decrypt(var);
+            break;
         case 0x15:
-            printf("Good... Wait what?\n"); // REMOVE
             decrypt(var);
             break;
         default:
-            printf("Nope %d\n", var); // REMOVE
             decrypt(rand());
             break;
     }
 }
 
+// Missing optimization in assembly
 int main()
 {
-    // xor on eax here
     int var; // 0x1c(%esp)
 
     srand(time(0));
