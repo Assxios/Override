@@ -4,7 +4,7 @@
 
 int main()
 {
-    int password;
+    int password; // 0x1c(%esp)
 
     puts("***********************************");
     puts("* \t     -Level00 -\t\t  *");

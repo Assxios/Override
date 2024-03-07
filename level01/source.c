@@ -18,8 +18,8 @@ int verify_user_pass(char *a_user_pass)
 
 int main()
 {
-    char buf[64]; // 0x1c
-    int ret; // 0x5c
+    char buf[64]; // 0x1c(%esp)
+    int ret; // 0x5c(%esp)
 
     memset(buf, 0, 64);
     ret = 0;
