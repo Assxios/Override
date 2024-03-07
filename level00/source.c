@@ -1,3 +1,4 @@
+// gcc -m32 source.c
 #include <stdio.h>
 #include <stdlib.h>
 
