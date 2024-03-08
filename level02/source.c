@@ -1,18 +1,32 @@
+// gcc -fno-stack-protector -z execstack -z norelro source.c
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-int main()
+int main(int argc, char **argv)
 {
-    int fd = fopen("/home/users/level03/.pass", "r");
-    if (fd == 0)
+    FILE *file; // -0x8(%rbp)
+    int len; // -0xc(%rbp)
+    char username[100]; // -0x70(%rbp)
+    char flag[42]; // -0xa0(%rbp)
+    char password[100]; // -0x110(%rbp)
+
+    memset(username, 0, 100);
+    memset(flag, 0, 42);
+    memset(password, 0, 100);
+
+    file = 0;
+    len = 0;
+
+    file = fopen("/home/users/level03/.pass", "r");
+    if (file == 0)
     {
         fwrite("ERROR: failed to open password file\n", 1, 36, stderr);
         exit(1);
     }
 
-    char buf[41];
-    int len = fread(buf, 1, 41, fd);
-    strcspn(buf, "\n");
-
+    len = fread(flag, 1, 41, file);
+    flag[strcspn(flag, "\n")] = 0;
     if (len != 41)
     {
         fwrite("ERROR: failed to read password file\n", 1, 36, stderr);
@@ -20,26 +34,24 @@ int main()
         exit(1);
     }
 
-    fclose(fd);
+    fclose(file);
 
     puts("===== [ Secure Access System v1.0 ] =====");
     puts("/***************************************\\");
     puts("| You must login to access this system. |");
     puts("\\**************************************/");
 
-    char username[100];
     printf("--[ Username: ");
     fgets(username, 100, stdin);
-    strcspn(username, "\n");
+    username[strcspn(username, "\n")] = 0;
 
-    char password[100];
     printf("--[ Password: ");
     fgets(password, 100, stdin);
-    strcspn(password, "\n");
+    password[strcspn(password, "\n")] = 0;
 
     puts("*****************************************");
 
-    if (strncmp(password, buf, 41) == 0)
+    if (strncmp(flag, password, 41) == 0)
     {
         printf("Greetings, %s!\n", username);
         system("/bin/sh");
