@@ -4,8 +4,8 @@
 #include <string.h>
 
 int main() {
-    char buffer[100];
-    int i = 0;
+    char buffer[100]; // 0x28(%esp)
+    int i = 0; // 0x8c(%esp)
 
     fgets(buffer, 100, stdin);
     i = 0;
