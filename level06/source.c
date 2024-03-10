@@ -1,11 +1,14 @@
+// gcc -m32 source.c
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
+#include <unistd.h>
+#include <string.h>
 #include <sys/ptrace.h>
 
 void clear_stdin()
 {
-    int c = 0;
+    int c = 0; // -0xc(%ebp)
 
     while (1)
     {
@@ -17,17 +20,18 @@ void clear_stdin()
 
 unsigned int get_unum()
 {
-    unsigned int c = 0;
+    unsigned int unum = 0; // -0xc(%ebp)
 
     fflush(stdout);
-    scanf("%u", &c);
+    scanf("%u", &unum);
     clear_stdin();
-    return c;
+    return unum;
 }
 
+// Slightly incorrect, but whatever
 void prog_timeout()
 {
-    exit(1);
+    exit(1); // Supposed to be a system call but cannot reproduce
 }
 
 void enable_timeout_cons()
@@ -35,56 +39,67 @@ void enable_timeout_cons()
     signal(SIGALRM, prog_timeout);
     alarm(60);
 }
+// any above functions are useless
 
-int	auth(char *login, int serial)
+int auth(char *login, unsigned int serial)
 {
-	login[strcspn(login, "\n")] = 0;
+    int i; // -0x14(%ebp)
+    int hash; // -0x10(%ebp)
+    size_t login_len; // -0xc(%ebp)
 
-	size_t len = strnlen(login, 32);
-	if (len <= 5)
-		return 1;
+    login[strcspn(login, "\n")] = 0;
+    login_len = strnlen(login, 32);
 
-	if (ptrace(PTRACE_TRACEME, 0, 1, 0) == -1)
-	{
-		puts("\033[32m.---------------------------.");
-		puts("\033[31m| !! TAMPERING DETECTED !!  |");
-		puts("\033[32m'---------------------------'");
-		return 1;
-	}
+    if (login_len <= 5)
+        return 1;
 
-	unsigned int key = (login[3] ^ 4919) + 6221293;
-	for (size_t i = 0; i < len; i++)
-	{
-		if (login[i] <= 31)
-			return 1;
-		key += (login[i] ^ key) * 1337;
-	}
+    if (ptrace(PTRACE_TRACEME, 0, 1, 0) == -1)
+    {
+        puts("\x1B[32m.---------------------------.");
+        puts("\x1B[31m| !! TAMPERING DETECTED !!  |");
+        puts("\x1B[32m'---------------------------'");
+        return 1;
+    }
 
-	return serial != key;
+    hash = (login[3] ^ 4919) + 6221293;
+    for (i = 0; i < login_len; i++)
+    {
+        if (login[i] <= 31)
+            return 1;
+        hash += (hash ^ (unsigned int)login[i]) % 0x539;
+    }
+
+    if (serial != hash)
+        return 1;
+    return 0;
 }
 
-int	main()
+// slight differences in assembly for stack variables (0x10 more :D)
+int main()
 {
-	puts("***********************************");
-	puts("*\t\tlevel06\t\t**");
-	puts("***********************************");
+    unsigned int serial; // 0x18(%esp)
+    char login[32]; // 0x1c(%esp)
 
-	char login[32];
-	printf("-> Enter Login: ");
-	fgets(login, 32, stdin);
+    puts("***********************************");
+    puts("*\t\tlevel06\t\t  *");
+    puts("***********************************");
 
-	puts("***********************************");
-	puts("***** NEW ACCOUNT DETECTED ********");
-	puts("***********************************");
+    printf("-> Enter Login: ");
+    fgets(login, 32, stdin);
 
-	int serial;
-	printf("-> Enter Serial: ");
-	scanf("%u", &serial);
+    puts("***********************************");
+    puts("***** NEW ACCOUNT DETECTED ********");
+    puts("***********************************");
 
-	if (!auth(login, serial))
-		return 1;
+    printf("-> Enter Serial: ");
+    scanf("%u", &serial);
 
-	puts("Authenticated!");
-	system("/bin/sh");
-	return 0;
+    if (auth(login, serial))
+    {
+        puts("Authenticated!");
+        system("/bin/sh");
+        return 0;
+    }
+    else
+        return 1;
 }
