@@ -1,4 +1,4 @@
-// gcc -fno-stack-protector -m32 source.c
+// gcc -fno-stack-protector -m32 -z execstack source.c
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -16,6 +16,7 @@ int verify_user_pass(char *a_user_pass)
     return strncmp(a_user_pass, "admin", 5);
 }
 
+// line differences on main+11 and main+15 (extra use of eax)
 int main()
 {
     char buf[64]; // 0x1c(%esp)
