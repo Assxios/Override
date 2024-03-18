@@ -25,14 +25,24 @@ unsigned int get_unum()
     return var1;
 }
 
-// Slightly incorrect, but whatever
 void prog_timeout()
 {
     exit(1); // Supposed to be a system call but cannot reproduce
 }
 // any above functions are useless
 
-// Missing optimization in assembly
+/* 
+    Missing optimizations in assembly:
+    0x08048693 <+51>:    push   %eax
+    0x08048694 <+52>:    xor    %eax,%eax
+    0x08048696 <+54>:    je     0x804869b <decrypt+59>
+    0x08048698 <+56>:    add    $0x4,%esp
+    0x0804869b <+59>:    pop    %eax
+
+    And another extra use of eax.
+
+    It doesnt change the behavior at all and idk how to reproduce it
+*/
 void decrypt(unsigned int key)
 {
     unsigned char buf[] = "Q}|u`sfg~sf{}|a3"; // -0x1d(%ebp) - -0xd(%ebp)
@@ -44,9 +54,11 @@ void decrypt(unsigned int key)
         buf[i] ^= key; // XOR decryption
 
     if (strncmp((char*)buf, "Congratulations!", 0x11) == 0)
+    {
         system("/bin/sh");
-    else
-        puts("\nInvalid Password");
+        return;
+    }
+    puts("\nInvalid Password");
 }
 
 void test(unsigned int usr_value, unsigned int pass)
@@ -106,7 +118,16 @@ void test(unsigned int usr_value, unsigned int pass)
     }
 }
 
-// Missing optimization in assembly
+/*
+    Missing optimizations in assembly:
+    0x08048863 <+9>:     push   %eax
+    0x08048864 <+10>:    xor    %eax,%eax
+    0x08048866 <+12>:    je     0x804886b <main+17>
+    0x08048868 <+14>:    add    $0x4,%esp
+    0x0804886b <+17>:    pop    %eax
+
+    Same as above, it doesnt change the behavior at all and idk how to reproduce it
+*/
 int main()
 {
     int var; // 0x1c(%esp)
