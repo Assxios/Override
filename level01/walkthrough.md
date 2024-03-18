@@ -162,5 +162,4 @@ cat /home/users/level02/.pass
 PwBLgNa8p8MTKW57S7zxVAQCxnCpV8JqTTs9XEBv
 ```
 
-
 We are now level02! Let's move on to the next level.

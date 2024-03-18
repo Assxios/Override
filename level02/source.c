@@ -7,13 +7,9 @@ int main(int argc, char **argv)
 {
     FILE *file; // -0x8(%rbp)
     int len; // -0xc(%rbp)
-    char username[100]; // -0x70(%rbp)
-    char flag[42]; // -0xa0(%rbp)
-    char password[100]; // -0x110(%rbp)
-
-    memset(username, 0, 100);
-    memset(flag, 0, 42);
-    memset(password, 0, 100);
+    char username[100] = { 0 }; // -0x70(%rbp)
+    char flag[41] = { 0 }; // -0xa0(%rbp)
+    char password[100] = { 0 }; // -0x110(%rbp)
 
     file = 0;
     len = 0;
