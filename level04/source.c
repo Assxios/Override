@@ -27,7 +27,6 @@ unsigned int get_unum()
     return var1;
 }
 
-// Slightly incorrect, but whatever
 void prog_timeout()
 {
     exit(1); // Supposed to be a system call but cannot reproduce
@@ -40,19 +39,15 @@ void enable_timeout_cons()
 }
 // any above functions are useless
 
-// slight differences in assembly for stack variables (nothing more)
-int main(int argc, const char **argv, const char **envp)
+// slight differences in assembly with stack variables alignment and optimization
+int main()
 {
-    int stat_loc;    // 0x9c(%esp) why ????
-    char buff[128];  // 0x1c(%esp)
-    int backup;      // 0xa4(%esp)
-    int ptrace_data; // 0xa8(%esp)
-    pid_t pid;       // 0xac(%esp)
+    pid_t pid = fork(); // 0xac(%esp)
+    char buff[128] = { 0 };  // 0x20(%esp)
 
-    pid = fork();
-    memset(buff, 0, sizeof(buff));
-    ptrace_data = 0;
-    stat_loc = 0;
+    int ptrace_data = 0; // 0xa8(%esp)
+    int stat_loc = 0;    // 0x1c(%esp)
+    int backup;      // 0xa4(%esp)
 
     if (pid == 0)
     {
