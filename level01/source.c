@@ -16,13 +16,11 @@ int verify_user_pass(char *a_user_pass)
     return strncmp(a_user_pass, "admin", 5);
 }
 
-// line differences on main+11 and main+15 (extra use of eax)
 int main()
 {
-    char buf[64]; // 0x1c(%esp)
+    char buf[64] = { 0 }; // 0x1c(%esp)
     int ret; // 0x5c(%esp)
 
-    memset(buf, 0, 64);
     ret = 0;
 
     puts("********* ADMIN LOGIN PROMPT *********");

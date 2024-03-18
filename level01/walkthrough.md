@@ -1,8 +1,7 @@
 # Level01
 
 ## Answer
-Our C source code generates almost the same assembly code as the original binary. Compile it as follows:
-> There is a slight difference in the assembly code as mentioned in the comments. Nonetheless, it doesn't change the program's behavior
+Our C source code generates the same assembly code as the original binary. Compile it as follows:
 ```
 gcc -fno-stack-protector -m32 -z execstack source.c
 ```
