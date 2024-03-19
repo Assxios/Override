@@ -41,6 +41,16 @@ void enable_timeout_cons()
 }
 // any above functions are useless
 
+/*
+    Missing optimizations in assembly:
+    0x0804877d <+53>:    push   %eax
+    0x0804877e <+54>:    xor    %eax,%eax
+    0x08048780 <+56>:    je     0x8048785 <auth+61>
+    0x08048782 <+58>:    add    $0x4,%esp
+    0x08048785 <+61>:    pop    %eax
+
+    It doesnt change the behavior at all and idk how to reproduce it
+*/
 int auth(char *login, unsigned int serial)
 {
     int i; // -0x14(%ebp)
@@ -50,7 +60,7 @@ int auth(char *login, unsigned int serial)
     login[strcspn(login, "\n")] = 0;
     login_len = strnlen(login, 32);
 
-    if (login_len <= 5)
+    if (login_len >= 5)
         return 1;
 
     if (ptrace(PTRACE_TRACEME, 0, 1, 0) == -1)
@@ -74,11 +84,22 @@ int auth(char *login, unsigned int serial)
     return 0;
 }
 
-// slight differences in assembly for stack variables (0x10 more :D)
+/*
+    Missing optimizations in assembly:
+    0x08048895 <+28>:    push   %eax
+    0x08048896 <+29>:    xor    %eax,%eax
+    0x08048898 <+31>:    je     0x804889d <main+36>
+    0x0804889a <+33>:    add    $0x4,%esp
+    0x0804889d <+36>:    pop    %eax
+
+    Aswell as multiple slight differences with different registers for optimization
+    It doesnt change the behavior at all and idk how to reproduce it
+*/
 int main()
 {
-    unsigned int serial; // 0x18(%esp)
-    char login[32]; // 0x1c(%esp)
+    int padding[4]; // 0x18(%esp)
+    unsigned int serial; // 0x28(%esp)
+    char login[32]; // 0x2c(%esp)
 
     puts("***********************************");
     puts("*\t\tlevel06\t\t  *");
