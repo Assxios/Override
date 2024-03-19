@@ -1,65 +1,3 @@
-the program ask for two input:
-
-    $ ./level06
-    ***********************************
-    *               level06           *
-    ***********************************
-    -> Enter Login: whatever
-    ***********************************
-    ***** NEW ACCOUNT DETECTED ********
-    ***********************************
-    -> Enter Serial: whatever
-
-we can see in the disassembly that the program hash the first input (login) and compare the key with the second input (serial). If the key is equal to the serial, the program will execute /bin/sh.
-
-cause the hash function is big we dont give the asm code but you can check the c code in the source code.
-
-more info:
-- login have to be 5 char long
-- ptrace is used to prevent debugging
-
-we will use a basic input like `whatever` and use gdb to find the result of the hash system:
-
-    (gdb) b *auth+114 //ptrace
-    Breakpoint 1 at 0x80487ba
-    
-    (gdb) b *auth+283 //after hash loop
-    Breakpoint 2 at 0x8048863
-    (gdb) r
-    Starting program: /home/users/level06/level06
-    ***********************************
-    *               level06           *
-    ***********************************
-    -> Enter Login: whatever
-    ***********************************
-    ***** NEW ACCOUNT DETECTED ********
-    ***********************************
-    -> Enter Serial: whatever
-
-    Breakpoint 1, 0x080487ba in auth ()
-    (gdb) set $eax=0 //pass the ptrace
-    (gdb) continue
-    Continuing.
-
-    Breakpoint 2, 0x08048863 in auth ()
-    (gdb) x/d $ebp-0x10 //result of the hash
-    0xffffd698:     6234500
-
-lets check this serial:
-
-    $ ./level06
-    ***********************************
-    *               level06           *
-    ***********************************
-    -> Enter Login: whatever
-    ***********************************
-    ***** NEW ACCOUNT DETECTED ********
-    ***********************************
-    -> Enter Serial: 6234500
-    Authenticated!
-    $ whoami
-    level07
-
 # Level06
 
 ## Answer
@@ -128,12 +66,12 @@ int auth(char *login, unsigned int serial)
 {
     int i; // -0x14(%ebp)
     int hash; // -0x10(%ebp)
-    size_t login_len; // -0xc(%ebp)
+    int login_len; // -0xc(%ebp)
 
     login[strcspn(login, "\n")] = 0;
     login_len = strnlen(login, 32);
 
-    if (login_len >= 5)
+    if (login_len <= 5)
         return 1;
 
     if (ptrace(PTRACE_TRACEME, 0, 1, 0) == -1)
@@ -188,7 +126,7 @@ int main()
     printf("-> Enter Serial: ");
     scanf("%u", &serial);
 
-    if (auth(login, serial))
+    if (!auth(login, serial))
     {
         puts("Authenticated!");
         system("/bin/sh");
@@ -199,44 +137,53 @@ int main()
 }
 ```
 
-In the source code, there isn't any obvious vulnerabilities, instead we have to find the correct input for the `test` function to not take a random key and then find the correct key between the values that will decrypt "Q}|u\`sfg~sf{}|a3" with a `XOR`.
+In the source code, there isn't any obvious vulnerabilities, instead we have to find the correct input for the `auth` function to return `0`. We can see that the `auth` function hashes the `login` input and compares it to the `serial` input. If the `login` is longer than 5 characters and the hash is equal to the `serial`, the program will execute `/bin/sh`.
 
-First, we need to input one of the following values for the `test` function to not take a random key:
-```
-322424844 (322424845 - 1)
-322424843 (322424845 - 2)
-322424842 (322424845 - 3)
-322424841 (322424845 - 4)
-322424840 (322424845 - 5)
-322424839 (322424845 - 6)
-322424838 (322424845 - 7)
-322424837 (322424845 - 8)
-322424836 (322424845 - 9)
-322424829 (322424845 - 16)
-322424828 (322424845 - 17)
-322424827 (322424845 - 18)
-322424826 (322424845 - 19)
-322424825 (322424845 - 20)
-322424843 (322424845 - 21)
-```
-
-Then we need to find the correct key between these values, which after some trial and error, we find to be `18`. Therefore, the number we need to input is `322424827`.
-
-Let's try to log in with the password we found:
+We'll use `gdb` to find the result of the hash system:
 ```bash
-$ ./level06
+(gdb) b *auth+114 # Breaking before ptrace
+Breakpoint 1 at 0x80487ba
+
+(gdb) b *auth+283 # Breaking after hash loop
+Breakpoint 2 at 0x8048863
+
+(gdb) r # Run the program
+Starting program: /home/users/level06/level06
 ***********************************
 *               level06           *
 ***********************************
--> Enter Login: whatever
+-> Enter Login: assxios
 ***********************************
 ***** NEW ACCOUNT DETECTED ********
 ***********************************
--> Enter Serial: 6234500
+-> Enter Serial: assxios
+
+Breakpoint 1, 0x080487ba in auth ()
+(gdb) set $eax=0 # Bypass ptrace
+(gdb) c
+Continuing.
+
+Breakpoint 2, 0x08048863 in auth ()
+(gdb) x/d $ebp-0x10 # Print the result of the hash
+0xffffd698:     6233782
+```
+
+Let's try to log in with the serial we found:
+```bash
+level06@OverRide:~$ ./level06
+***********************************
+*               level06           *
+***********************************
+-> Enter Login: assxios
+***********************************
+***** NEW ACCOUNT DETECTED ********
+***********************************
+-> Enter Serial: 6233782
 Authenticated!
 $ whoami
 level07
+$ cat /home/users/level07/.pass
+GbcPDRgsFK77LNnnuh7QyFYA2942Gp8yKj9KrWD8
 ```
 
 We are now level07! Let's move on to the next level.
-

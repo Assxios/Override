@@ -55,12 +55,12 @@ int auth(char *login, unsigned int serial)
 {
     int i; // -0x14(%ebp)
     int hash; // -0x10(%ebp)
-    size_t login_len; // -0xc(%ebp)
+    int login_len; // -0xc(%ebp)
 
     login[strcspn(login, "\n")] = 0;
     login_len = strnlen(login, 32);
 
-    if (login_len >= 5)
+    if (login_len <= 5)
         return 1;
 
     if (ptrace(PTRACE_TRACEME, 0, 1, 0) == -1)
@@ -115,7 +115,7 @@ int main()
     printf("-> Enter Serial: ");
     scanf("%u", &serial);
 
-    if (auth(login, serial))
+    if (!auth(login, serial))
     {
         puts("Authenticated!");
         system("/bin/sh");
