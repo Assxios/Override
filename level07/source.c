@@ -1,4 +1,4 @@
-// gcc -m32 source.c
+// gcc -m32 -z execstack source.c
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

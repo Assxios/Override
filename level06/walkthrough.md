@@ -9,7 +9,6 @@ gcc -m32 source.c
 
 Let's take a look at the source code:
 ```c
-// gcc -m32 source.c
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>

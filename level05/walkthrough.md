@@ -8,7 +8,6 @@ gcc -fno-stack-protector source.c
 
 Let's take a look at the source code:
 ```c
-// gcc -fno-stack-protector -m32 -z execstack -z norelro source.c
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
