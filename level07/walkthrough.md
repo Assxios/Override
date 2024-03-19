@@ -184,7 +184,19 @@ if ((idx % 3 == 0) || (idx >> 0x18 == 0xb7)) // 0x18 is 24 and 0xb7 is 183
 }
 ```
 
-As you can see any index that is a multiple of 3 will be reserved for `wil`. EXPLAIN WHY 1073741938 IS EQUAL TO 114 (BESIDES SHORT WRAPPING)
+As you can see any index that is a multiple of 3 will be reserved for `wil`. But since this is an index of an int buffer, we can use some overflow to bypass this check, indeed our index will be multiplied by 4 to get the real address in memory, This is equivalent to a shift of 2 bits to the left as seen here:
+```
+0x08048741 <+148>:   shl    $0x2,%eax
+```
+Therefore, as long as the index is not a multiple of 3, and that after shifting 2 bits to the left, its value is equal to 114, then we'll be able to use it. Let's elaborate on this:
+```
+114: 00000000000000000000000001110010
+1073741938: 01000000000000000000000001110010
+2147483762: 10000000000000000000000001110010
+3221225586: 11000000000000000000000001110010
+```
+
+Here is the 4 values that will be equal to 114 after shifting 2 bits to the left. 114 and 3221225586 are out of the question because they are multiples of 3. Therefore, we can use 1073741938 or 2147483762.
 
 So let's convert all the values:
 ```
