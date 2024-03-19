@@ -142,7 +142,7 @@ ebp            0xffffd708       0xffffd708
 [...]
 ```
 
-By calculating the difference between `esp` and `ebp` we can see that the stack is allocated 72 bytes:
+By calculating the difference between `esp` and `ebp` we can see that the stack is allocated 184 bytes:
 ```
 0xbffff728 - 0xbffff6e0 = b8 (184 in decimal)
 ```	

@@ -83,7 +83,7 @@ int main(int argc, char **argv, char **env)
     puts("----------------------------------------------------\n  Welcome to wil's crappy number storage service!   \n----------------------------------------------------\n Commands:                                          \n    store - store a number into the data storage    \n    read  - read a number from the data storage     \n    quit  - exit the program                        \n----------------------------------------------------\n   wil has reserved some storage :>                 \n----------------------------------");
     while (1)
     {
-        printf("Input command");
+        printf("Input command: ");
         ret = 1;
         fgets(cmd, 20, stdin);
         cmd[strlen(cmd) - 1] = 0;
@@ -96,9 +96,9 @@ int main(int argc, char **argv, char **env)
             break;
 
         if (ret)
-            printf(" Completed %s command successfully\n", cmd);
-        else
             printf(" Failed to do %s command\n", cmd);
+        else
+            printf(" Completed %s command successfully\n", cmd);
         memset(cmd, 0, 20);
     }
     return 0;
