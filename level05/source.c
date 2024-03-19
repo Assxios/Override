@@ -1,4 +1,4 @@
-// gcc -fno-stack-protector -m32 source.c
+// gcc -fno-stack-protector -m32 -z execstack -z norelro source.c
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

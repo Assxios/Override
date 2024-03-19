@@ -58,7 +58,7 @@ int main()
 }
 ```
 
-Let's focus on the `main` function. It reads input using the `fgets` function, which is known to be safe as it has a mechanism to limit the number of bytes read. However we're reading 100 bytes in `buf` which only has 64 bytes allocated on the stack. This will allow us to overflow the buffer and overwrite the return address of the `main` function.
+Let's focus on the `main` function. It reads input using the `fgets` function, which is known to be safe as it has a mechanism to limit the number of bytes read. However, we're reading 100 bytes in `buf` which only has 64 bytes allocated on the stack. This will allow us to overflow the buffer and overwrite the return address of the `main` function.
 
 Let's analyze the stack layout of our program:
 ```bash
