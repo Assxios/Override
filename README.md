@@ -20,6 +20,24 @@ For this project, we tried our absolute best to make our source files as accurat
 
 If you are able to make the source code more accurate, please feel free to open a pull request.
 
+## Flags
+In this project, you will need different flags for `gcc` to compile your own source code so that it matches the original binary. We have provided those flags at the top of every `source.c` file. However, let us remind you of them here:
+
+- `-m32` : Compile for 32-bit architecture
+- `-fno-stack-protector` : Disable stack canaries
+- `-z execstack` : Allow execution on the stack (NX bit disabled)
+- `-fpie -pie` : Enable PIE (Position Independent Executable)
+- `-no-relro` : Disable RELRO (Relocation Read-Only)
+- `-z now` : Full RELRO
+
+I've ignored some flags that are not useful or already enabled by default. Here is the default security flags for `gcc`:
+```bash
+level09@OverRide:/tmp$ gcc main.c
+level09@OverRide:/tmp$ checksec --file a.out
+RELRO           STACK CANARY      NX            PIE             RPATH      RUNPATH      FILE
+Partial RELRO   Canary found      NX enabled    No PIE          No RPATH   No RUNPATH   a.out
+```
+
 ## Tools
 We **only** used `GDB` for this project.  
 We heavily recommend you to stick to reading the assembly code and understanding the stack with your own head, it will not only be much more rewarding, but it will also help you understand the concepts better.

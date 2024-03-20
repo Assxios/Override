@@ -133,12 +133,10 @@ Anything written beyond those 200 bytes will be treated as an address (only the 
 
 Alright, let's get the address of the `secret_backdoor` function:
 ```bash
-(gdb) info function secret_backdoor
-All functions matching regular expression "secret_backdoor":
-
-Non-debugging symbols:
-0x000000000000088c  secret_backdoor
+(gdb) p secret_backdoor
+$3 = {<text variable, no debug info>} 0x55555555488c <secret_backdoor>
 ```
+> Make sure you run the program before running this command, otherwise the address will be different.
 
 We, now, only need to find a value that will be written into `message->len` to overflow the `message->msg` buffer. Since our padding is 200 bytes, and we need to write 8 bytes for the address of the `secret_backdoor` function, we, therefore, need to write 208 into `message->len`. Which is `0xd0` in hexadecimal.
 
