@@ -147,7 +147,7 @@ By calculating the difference between `esp` and `ebp` we can see that the stack 
 0xbffff728 - 0xbffff6e0 = b8 (184 in decimal)
 ```	
 
-Furthermore, we can see that our buffer is located at `0x20(%esp),%eax`. Since there is 184 bytes for the stack, our buffer will therefore require 152 bytes (184 - 32) before reaching `ebp`.
+Furthermore, we can see that our buffer is located at `0x20(%esp)`. Since there is 184 bytes for the stack, our buffer will therefore require 152 bytes (184 - 32) before reaching `ebp`.
 
 Since our goal is to overflow the stack until we reach the return address of the main function, we need to add another 4 bytes to go from `ebp` to `ebp + 4` (the return address). So a total of 156 bytes (152 + 4).
 

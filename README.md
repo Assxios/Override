@@ -13,7 +13,9 @@ Since this is the third project of the security branch, we will be using the kno
 ## Vision
 For this project, we tried our absolute best to make our source files as accurate as possible. However, we couldn't always have the exact assembly code as the original binary. The following sources whom are not exactly the same as the original binary are:
 - [level03/source.c](/level03/source.c)
-- [bonus3/source.c](/bonus3/source.c)
+- [level04/source.c](/level04/source.c)
+- [level06/source.c](/level06/source.c)
+- [level09/source.c](/level09/source.c)
 > Although the source code is not exactly the same as the original binary, it still works the same way and will allow you to solve the challenge.
 
 If you are able to make the source code more accurate, please feel free to open a pull request.

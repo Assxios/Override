@@ -88,7 +88,7 @@ By calculating the difference between `esp` and `ebp` we can see that the stack 
 0xffffd708 - 0xffffd6a0 = 68 (104 in decimal)
 ```	
 
-Furthermore, we can see that our buffer is located at `0x1c(%esp),%eax`. Since there is 104 bytes for the stack, our buffer will therefore require 76 bytes (104 - 28) before reaching `ebp`.
+Furthermore, we can see that our buffer is located at `0x1c(%esp)`. Since there is 104 bytes for the stack, our buffer will therefore require 76 bytes (104 - 28) before reaching `ebp`.
 
 Since our goal is to overflow the stack until we reach the return address of the main function, we need to add another 4 bytes to go from `ebp` to `ebp + 4` (the return address). So a total of 80 bytes (76 + 4).
 > If you're struggling, you can just use a [Buffer overflow pattern generator](https://wiremask.eu/tools/buffer-overflow-pattern-generator/), to find the offset of the return address. However, it is recommended to understand the stack layout and how to calculate the offset yourself.
