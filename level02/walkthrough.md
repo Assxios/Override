@@ -91,7 +91,6 @@ level02@OverRide:~$ for i in {1..42};     do echo $i %$i\$p | ./level02 | grep d
 26 0x48336750664b394d does not have access!
 [...]
 ```
-> The reason why our variable is located between the 22nd and 26th addresses is because the `flag` variable is located at `-0xa0(%rbp)` which is 160 in decimal, just add 16 (for the ret address, argc, argv, and envp) and you get 176 which devided by 8 (our addresses are 8 bytes long because 64 bits) is 22.
 
 We appear to have found the password, let's convert it to ASCII:
 ```
